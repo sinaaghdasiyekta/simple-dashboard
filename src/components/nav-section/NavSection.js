@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
 import { NavLink as RouterLink } from 'react-router-dom';
 // @mui
-import { Box, List, ListItemText } from '@mui/material';
+import { Box, List, ListItemText, Stack } from '@mui/material';
 //
-import { StyledNavItem, StyledNavItemIcon } from './styles';
+import { StyledNavItem } from './styles';
+import Iconify from '../iconify/Iconify';
 
 // ----------------------------------------------------------------------
 
@@ -44,7 +45,9 @@ function NavItem({ item }) {
         },
       }}
     >
-      <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
+      <Stack px={1}>
+        <Iconify icon={icon} width={20} height={20} />
+      </Stack>
 
       <ListItemText disableTypography primary={title} />
 

@@ -7,7 +7,7 @@ import GridTable from '../components/GridTable';
 export default function UserPage() {
 
   return (
-    <DashboardPageContainer title="User">
+    <DashboardPageContainer title="Category">
       <Card>
         <GridTable />
       </Card>
