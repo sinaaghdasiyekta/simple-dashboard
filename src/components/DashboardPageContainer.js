@@ -11,7 +11,7 @@ import {
 // components
 import Iconify from './iconify';
 
-const DashboardPageContainer = ({ children, title }) => (
+const DashboardPageContainer = ({ children, title, onAddClick }) => (
   <>
     <Helmet>
       <title> {title} </title>
@@ -22,7 +22,7 @@ const DashboardPageContainer = ({ children, title }) => (
         <Typography variant="h4" gutterBottom>
           {title}
         </Typography>
-        <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+        <Button variant="contained" onClick={onAddClick} startIcon={<Iconify icon="eva:plus-fill" />}>
           {`New ${title}`}
         </Button>
       </Stack>
@@ -35,6 +35,7 @@ const DashboardPageContainer = ({ children, title }) => (
 DashboardPageContainer.propTypes = {
   children: PropTypes.node,
   title: PropTypes.string,
+  onAddClick: PropTypes.func,
 };
 
 export default DashboardPageContainer;
