@@ -92,7 +92,10 @@ function AuthProvider({ children }) {
     const isAuthenticated = !!accessToken;
     if (accessToken) {
       webAuth.client.userInfo(accessToken, (err, { email, name, sub }) => {
-        if (err) throw err;
+        if (err) {
+          logout();
+          return;
+        };
         const user = { email, name, sub };
         dispatch({
           type: Types.init,
