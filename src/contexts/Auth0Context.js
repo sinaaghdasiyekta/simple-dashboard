@@ -19,7 +19,11 @@ const initialState = {
   loading: false,
   isAuthenticated: false,
   isInitialized: false,
-  user: null
+  user: null,
+  error: {
+    show: false,
+    text: '',
+  },
 };
 
 const Types = {
@@ -27,13 +31,18 @@ const Types = {
   init: 'INITIALIZE',
   login: 'LOGIN',
   logout: 'LOGOUT',
-  Register: 'REGISTER'
+  Register: 'REGISTER',
+  error: 'ERROR'
 };
 
 const reducer = (state, action) => {
   if (action.type === Types.loading) {
     const { loading } = action.payload;
     return { ...state, loading };
+  }
+  if (action.type === Types.error) {
+    const { show, text } = action.payload;
+    return { ...state, error: { show, text: text || 'Unknown error! Please login again' } };
   }
   if (action.type === Types.init) {
     const { isAuthenticated, user } = action.payload;
@@ -91,16 +100,19 @@ function AuthProvider({ children }) {
     const accessToken = handleToken('', 'read');
     const isAuthenticated = !!accessToken;
     if (accessToken) {
-      webAuth.client.userInfo(accessToken, (err, { email, name, sub }) => {
+      webAuth.client.userInfo(accessToken, (err, res) => {
         if (err) {
           logout();
-          return;
+          dispatch({ type: Types.loading, payload: { loading: false } });
+          dispatch({ type: Types.error, payload: { show: true, text: err.description } });
+        } else {
+          const { email, name, sub } = res;
+          const user = { email, name, sub };
+          dispatch({
+            type: Types.init,
+            payload: { isAuthenticated, user }
+          });
         };
-        const user = { email, name, sub };
-        dispatch({
-          type: Types.init,
-          payload: { isAuthenticated, user }
-        });
       });
     } else {
       dispatch({
@@ -111,6 +123,7 @@ function AuthProvider({ children }) {
   }, []);
 
   const login = async (username, password) => {
+    dispatch({ type: Types.error, payload: { show: false, text: '' } });
     dispatch({ type: Types.loading, payload: { loading: true } });
 
     webAuth.client.login(
@@ -119,15 +132,25 @@ function AuthProvider({ children }) {
         username,
         password,
       },
-      (error, { accessToken }) => {
-        if (error) throw error;
-        handleToken(accessToken, 'save');
-        webAuth.client.userInfo(accessToken, (err, { email, name, sub }) => {
-          if (err) throw err;
-          const user = { email, name, sub };
-          dispatch({ type: Types.login, payload: { user } });
+      (error, response) => {
+        if (error) {
           dispatch({ type: Types.loading, payload: { loading: false } });
-        });
+          dispatch({ type: Types.error, payload: { show: true, text: error.description } })
+        } else {
+          const { accessToken } = response;
+          handleToken(accessToken, 'save');
+          webAuth.client.userInfo(accessToken, (err, res) => {
+            if (err) {
+              dispatch({ type: Types.loading, payload: { loading: false } });
+              dispatch({ type: Types.error, payload: { show: true, text: error.description } })
+            } else {
+              const { email, name, sub } = res;
+              const user = { email, name, sub };
+              dispatch({ type: Types.login, payload: { user } });
+              dispatch({ type: Types.loading, payload: { loading: false } });
+            }
+          });
+        };
       }
     );
   };
