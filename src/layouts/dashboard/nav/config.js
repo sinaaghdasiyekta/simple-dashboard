@@ -5,18 +5,18 @@ const navConfig = [
     icon: 'ic:round-space-dashboard',
   },
   {
-    title: 'user',
-    path: '/dashboard/user',
+    title: 'users',
+    path: '/dashboard/users',
     icon: 'mdi:user-group',
   },
   {
-    title: 'category',
-    path: '/dashboard/category',
+    title: 'categories',
+    path: '/dashboard/categories',
     icon: 'material-symbols:category-rounded',
   },
   {
-    title: 'class',
-    path: '/dashboard/class',
+    title: 'classes',
+    path: '/dashboard/classes',
     icon: 'mdi:class',
   },
 ];

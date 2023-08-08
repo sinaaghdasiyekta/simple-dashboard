@@ -1,28 +1,148 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // @mui
-import { Card } from '@mui/material';
+import { Card, Stack, Tooltip, Typography } from '@mui/material';
 // components
 import DashboardPageContainer from '../components/DashboardPageContainer';
 import GridTable from '../components/GridTable';
 import AddDrawer from '../components/AddDrawer';
 import { ClassForm } from '../sections/@dashboard/class';
+import useAsync from '../hooks/useAsync';
+import api from '../apis/api';
+import BoringAvatar from '../components/BoringAvatar';
 
 export default function UserPage() {
+  const [initiallized, setInitiallized] = useState(false);
   const [addDrawerOpen, setAddDrawerOpen] = useState(false);
+  const [code, setCode] = useState('');
+  const [users, setUsers] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [createdBy, setCreatedBy] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  
+  const columns = [
+    { id: 'code', label: 'Class Code', alignRight: false },
+    { id: 'creator', label: 'Creator', alignRight: false },
+    { id: 'users', label: 'Users', alignRight: false },
+    { id: 'categories', label: 'Categories', alignRight: false },
+  ];
+
+  const { loading: loadingCategories, response: categoriesResponse } = useAsync(api.getCategories);
+  const { loading: loadingUsers, response: usersResponse } = useAsync(api.getUsers);
+  useEffect(() => {
+    if (usersResponse) setUsers(usersResponse.data);
+    if (categoriesResponse) setCategories(categoriesResponse.data);
+  }, [usersResponse, categoriesResponse]);
+
+  const resetValues = () => {
+    setCode('');
+    setCreatedBy([]);
+    setSelectedUsers([]);
+    setSelectedCategories([]);
+  };
 
   const openDrawer = () => setAddDrawerOpen(true);
-  const closeDrawer = () => setAddDrawerOpen(false);
+  const closeDrawer = () => {
+    resetValues();
+    setAddDrawerOpen(false);
+  };
 
-  const onAddClass = () => {};
+  const { loading } = useAsync(
+    api.getClasses,
+    [],
+    [],
+    true,
+    !initiallized,
+    true,
+    (succeed, response) => {
+      if (succeed) setClasses(response.data);
+      setInitiallized(true);
+    }
+  );
+  const { loading: creating, execute: onAddClass } = useAsync(
+    api.createClass,
+    [{
+      code,
+      createdBy,
+      categoryIds: selectedCategories.map(({ _id }) => _id),
+      userIds: selectedUsers.map(({ _id }) => _id),
+    }],
+    [code, createdBy, selectedCategories, selectedUsers],
+    false,
+    Boolean(code && createdBy && selectedCategories.length && selectedUsers.length),
+    false,
+    (succeed, response) => {
+      if (succeed) {
+        closeDrawer();
+        setClasses([...classes, response.data]);
+      }
+    },
+  );
 
   return (
-    <DashboardPageContainer title="Class" onAddClick={openDrawer}>
+    <DashboardPageContainer loading={loading} title="Class" onAddClick={openDrawer}>
       <Card>
-        <GridTable />
+        <GridTable
+          data={classes}
+          columns={columns}
+          avatarModel="pixel"
+          filterProperty="code"
+          getCellsOfRow={({ code, createdBy, userIds, categoryIds }, index) => [code, createdBy, userIds?.length > 0 ? (
+            <Stack direction="row" alignItems="flex-start" flexWrap="wrap" gap={0.25}>
+              {users.filter(({ _id }) => userIds.includes(_id)).map(({ fullName }) => (
+                <Tooltip key={index} title={fullName}>
+                  <span>
+                    <BoringAvatar
+                      size={24}
+                      name={fullName}
+                      variant="beam"
+                    />
+                  </span>
+                </Tooltip>
+              ))}
+            </Stack>
+          ) : (
+            <Typography color="text.disabled">
+              No Users
+            </Typography>
+          ), categoryIds?.length > 0 ? (
+            <Stack direction="row" alignItems="flex-start" flexWrap="wrap" gap={0.25}>
+              {categories.filter(({ _id }) => categoryIds.includes(_id)).map(({ name }) => (
+                <Tooltip key={index} title={name}>
+                  <span>
+                    <BoringAvatar
+                      size={24}
+                      name={name}
+                      variant="bauhaus"
+                    />
+                  </span>
+                </Tooltip>
+              ))}
+            </Stack>
+          ) : (
+            <Typography color="text.disabled">
+              No Categories
+            </Typography>
+          )].map((content) => ({ content, align: 'left' }))}
+        />
       </Card>
   
-      <AddDrawer open={addDrawerOpen} onClose={closeDrawer} title="Class" onSubmit={onAddClass}>
-        <ClassForm />
+      <AddDrawer loading={creating} open={addDrawerOpen} onClose={closeDrawer} title="Class" onSubmit={onAddClass}>
+        <ClassForm
+          code={code}
+          users={users}
+          creator={createdBy}
+          categories={categories}
+          loadingUsers={loadingUsers}
+          loadingCategories={loadingCategories}
+          selectedUsers={selectedUsers}
+          selectedCategories={selectedCategories}
+          onCodeChange={(value) => setCode(value)}
+          onUserSelect={(value) => setSelectedUsers(value)}
+          onCategorySelect={(value) => setSelectedCategories(value)}
+          onCreatorChange={(value) => setCreatedBy(value)}
+        />
       </AddDrawer>
     </DashboardPageContainer>
   );

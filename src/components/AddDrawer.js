@@ -1,4 +1,4 @@
-import { Box, Button, Drawer, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, Drawer, Stack, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import PropTypes from 'prop-types';
 import React from 'react'
@@ -9,15 +9,19 @@ const AddDrawer = ({ title, open, loading, children, onClose, onSubmit }) => {
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
-      <Stack p={3} gap={2} width={isMobile ? '100%' : 320} height="100%">
-        <Typography variant="h5" fontWeight="fontWeightBold" mb={3}>
+      <Stack py={3} width={isMobile ? '100%' : 320} height="100%">
+        <Typography px={2} variant="h5" fontWeight="fontWeightBold">
           {`Add a New ${title}`}
         </Typography>
-        <Box>
-          {children}
-        </Box>
+        <Divider sx={{ mt: 3 }} />
+        <Stack overflow="auto">
+          <Stack pt={3} p={2}>
+            {children}
+          </Stack>
+        </Stack>
         <Box flexGrow={1} />
-        <Stack direction="row" justifyContent="space-between">
+        <Divider sx={{ mb: 3 }} />
+        <Stack px={2} direction="row" justifyContent="space-between">
           <Button color="inherit" onClick={onClose}>
             Cancel
           </Button>

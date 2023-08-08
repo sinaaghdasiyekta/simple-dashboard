@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { sentenceCase } from 'change-case';
+import PropTypes from 'prop-types';
 import { filter } from 'lodash';
 // @mui
 import {
@@ -24,19 +25,10 @@ import Iconify from './iconify';
 import Scrollbar from './scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
+import BoringAvatar from './BoringAvatar';
 // mock
-import USERLIST from '../_mock/user';
 
 // ----------------------------------------------------------------------
-
-const TABLE_HEAD = [
-  { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
-  { id: '' },
-];
 
 // ----------------------------------------------------------------------
 
@@ -56,7 +48,7 @@ function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function applySortFilter(array, comparator, query) {
+function applySortFilter(array, comparator, query, property) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -64,14 +56,14 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(array, (row) => row[property].toLowerCase().indexOf(query.toLowerCase()) !== -1);
   }
   return stabilizedThis.map((el) => el[0]);
 }
 
 // ----------------------------------------------------------------------
 
-const GridTable = () => {
+const GridTable = ({ data, filterProperty, avatarModel, columns = [], getCellsOfRow }) => {
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -96,7 +88,7 @@ const GridTable = () => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.name);
+      const newSelecteds = data.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -132,9 +124,9 @@ const GridTable = () => {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
-  const isNotFound = !filteredUsers.length && !!filterName;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
+  const filteredRows = applySortFilter(data, getComparator(order, orderBy), filterName, filterProperty);
+  const isNotFound = !filteredRows.length && !!filterName;
 
   return (
     <>
@@ -146,47 +138,53 @@ const GridTable = () => {
             <UserListHead
               order={order}
               orderBy={orderBy}
-              headLabel={TABLE_HEAD}
-              rowCount={USERLIST.length}
+              headLabel={columns}
+              rowCount={data.length}
               numSelected={selected.length}
               onRequestSort={handleRequestSort}
               onSelectAllClick={handleSelectAllClick}
             />
             <TableBody>
-              {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                const selectedUser = selected.indexOf(name) !== -1;
+              {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                const CELLS = getCellsOfRow?.(row, index) || [];
+                console.log({row, CELLS})
+                // const selectedUser = selected.indexOf(name) !== -1;
 
                 return (
-                  <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                    <TableCell padding="checkbox">
+                  <TableRow
+                    hover
+                    key={index}
+                    tabIndex={-1}
+                    role="checkbox"
+                    // selected={selectedUser}
+                  >
+                    {/* <TableCell padding="checkbox">
                       <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                    </TableCell>
+                    </TableCell> */}
 
-                    <TableCell component="th" scope="row" padding="none">
+                    <TableCell component="th" scope="row">
                       <Stack direction="row" alignItems="center" spacing={2}>
-                        <Avatar alt={name} src={avatarUrl} />
+                        <BoringAvatar
+                          name={CELLS[0].content}
+                          variant={avatarModel}
+                        />
                         <Typography variant="subtitle2" noWrap>
-                          {name}
+                          {CELLS[0].content}
                         </Typography>
                       </Stack>
                     </TableCell>
 
-                    <TableCell align="left">{company}</TableCell>
+                    {CELLS.slice(1).map(({ align, content }, index) => (
+                      <TableCell key={index} align={align || 'left'}>
+                        {content}
+                      </TableCell>
+                    ))}
 
-                    <TableCell align="left">{role}</TableCell>
-
-                    <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-
-                    <TableCell align="left">
-                      <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                    </TableCell>
-
-                    <TableCell align="right">
+                    {/* <TableCell align="right">
                       <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
                         <Iconify icon={'eva:more-vertical-fill'} />
                       </IconButton>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 );
               })}
@@ -227,7 +225,7 @@ const GridTable = () => {
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={USERLIST.length}
+        count={data.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
@@ -252,7 +250,7 @@ const GridTable = () => {
           },
         }}
       >
-        <MenuItem>
+        {/* <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
@@ -260,10 +258,18 @@ const GridTable = () => {
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
-        </MenuItem>
+        </MenuItem> */}
       </Popover>
     </>
   );
+};
+
+GridTable.propTypes = {
+  avatarModel: PropTypes.string,
+  filterProperty: PropTypes.string,
+  data: PropTypes.array,
+  columns: PropTypes.array,
+  getCellsOfRow: PropTypes.func,
 };
 
 export default GridTable;

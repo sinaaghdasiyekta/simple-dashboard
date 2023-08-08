@@ -3,7 +3,6 @@ import { CircularProgress, Stack } from '@mui/material';
 import auth0 from 'auth0-js';
 import PropTypes from 'prop-types';
 import { auth0Config, hostURL } from '../config';
-import { boringAvatarGenerator } from '../utils/boringAvatars';
 import Logo from '../components/logo/Logo';
 
 // ----------------------------------------------------------------------
@@ -173,7 +172,6 @@ function AuthProvider({ children }) {
           id: state?.user?.sub,
           email: state?.user?.email,
           displayName: state?.user?.name,
-          photoURL: boringAvatarGenerator(state?.user?.name, 'marble'),
           role: 'admin'
         },
         login,

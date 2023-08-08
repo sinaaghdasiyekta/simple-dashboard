@@ -14,6 +14,7 @@ import NavSection from '../../../components/nav-section';
 import Iconify from '../../../components/iconify/Iconify';
 //
 import navConfig from './config';
+import BoringAvatar from '../../../components/BoringAvatar';
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +62,7 @@ export default function Nav({ openNav, onCloseNav }) {
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none">
           <StyledAccount>
-            <Avatar src={user.photoURL} />
+            <BoringAvatar name={user.displayName} variant="marble" />
 
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>

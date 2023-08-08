@@ -1,38 +1,97 @@
-import { Autocomplete, Avatar, ListItem, ListItemAvatar, ListItemText, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, ListItem, ListItemAvatar, ListItemText, Stack, TextField } from '@mui/material';
+import { useNavigate } from 'react-router';
+import PropTypes from 'prop-types';
 import React from 'react'
-import { boringAvatarGenerator } from '../../../utils/boringAvatars';
+import BoringAvatar from '../../../components/BoringAvatar';
 
-const ClassForm = () => {
+const ClassForm = ({
+  code,
+  users,
+  creator,
+  categories,
+  loadingUsers,
+  loadingCategories,
+  selectedUsers,
+  selectedCategories,
+  onCodeChange,
+  onUserSelect,
+  onCategorySelect,
+  onCreatorChange,
+}) => {
+  const { navigate } = useNavigate();
+
   return (
     <Stack gap={2}>
+      <TextField
+        autoFocus
+        name="class-code"
+        label="Class Code"
+        value={code}
+        onChange={(event) => onCodeChange(event.target.value)}
+      />
+      <TextField
+        name="creator"
+        label="Creator"
+        value={creator}
+        onChange={(event) => onCreatorChange(event.target.value)}
+      />
       <Autocomplete
-        options={[{ firstname: 'Sina', lastname: 'Aghdasi', phonenumber: '+989123456789' }, { firstname: 'Parham', lastname: "Abhar", phonenumber: '+989123456789' }]}
-        renderInput={(params) => <TextField {...params} />}
-        getOptionLabel={(option) => `${option.firstname} ${option.lastname}`}
-        renderOption={(props, { firstname, lastname, phonenumber }) => (
+        multiple
+        options={users}
+        value={selectedUsers}
+        onChange={(e, v) => onUserSelect(v)}
+        loading={loadingUsers}
+        renderInput={(params) => <TextField {...params} label="Users" />}
+        getOptionLabel={(option) => option.fullName}
+        renderOption={(props, { fullName, phoneNumber }) => (
           <ListItem {...props}>
             <ListItemAvatar>
-              <Avatar src={boringAvatarGenerator(`${firstname} ${lastname}`, 'beam')} />
+              <BoringAvatar name={fullName} variant="beam" />
             </ListItemAvatar>
-            <ListItemText primary={`${firstname} ${lastname}`} secondary={phonenumber} />
+            <ListItemText primary={fullName} secondary={phoneNumber} />
           </ListItem>
         )}
       />
+      <Button size="small" onClick={() => navigate('/users')} sx={{ alignSelf: 'flex-end' }}>
+        Create User
+      </Button>
       <Autocomplete
-        options={[{ name: 'Category 1' }, { name: 'Category 2' }]}
-        renderInput={(params) => <TextField {...params} />}
+        multiple
+        options={categories}
+        value={selectedCategories}
+        onChange={(e, v) => onCategorySelect(v)}
+        loading={loadingCategories}
+        renderInput={(params) => <TextField {...params} label="Categories" />}
         getOptionLabel={(option) => option.name}
-        renderOption={(props, { name }) => (
+        renderOption={(props, { name, voices }) => (
           <ListItem {...props}>
             <ListItemAvatar>
-              <Avatar src={boringAvatarGenerator(name, 'bauhaus')} />
+              <BoringAvatar name={name} variant="bauhaus" />
             </ListItemAvatar>
-            <ListItemText primary={name} />
+            <ListItemText primary={name} secondary={`${voices.length || 'No' } Voices`} />
           </ListItem>
         )}
       />
+      <Button size="small" onClick={() => navigate('/categories')} sx={{ alignSelf: 'flex-end' }}>
+        Create Category
+      </Button>
     </Stack>
   );
+}
+  
+ClassForm.propTypes = {
+  code: PropTypes.string,
+  creator: PropTypes.string,
+  users: PropTypes.array,
+  categories: PropTypes.array,
+  loadingUsers: PropTypes.bool,
+  loadingCategories: PropTypes.bool,
+  selectedUsers: PropTypes.array,
+  selectedCategories: PropTypes.array,
+  onCodeChange: PropTypes.func,
+  onUserSelect: PropTypes.func,
+  onCategorySelect: PropTypes.func,
+  onCreatorChange: PropTypes.func,
 };
 
 export default ClassForm;

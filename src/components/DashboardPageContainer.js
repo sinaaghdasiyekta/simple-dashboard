@@ -7,11 +7,12 @@ import {
   Button,
   Container,
   Typography,
+  Skeleton,
 } from '@mui/material';
 // components
 import Iconify from './iconify';
 
-const DashboardPageContainer = ({ children, title, onAddClick }) => (
+const DashboardPageContainer = ({ children, title, onAddClick, loading }) => (
   <>
     <Helmet>
       <title> {title} </title>
@@ -27,7 +28,9 @@ const DashboardPageContainer = ({ children, title, onAddClick }) => (
         </Button>
       </Stack>
 
-      {children}
+      {loading ? (
+        <Skeleton variant="rectangular" height={500} />
+      ) : children}
     </Container>
   </>
 );
@@ -36,6 +39,7 @@ DashboardPageContainer.propTypes = {
   children: PropTypes.node,
   title: PropTypes.string,
   onAddClick: PropTypes.func,
+  loading: PropTypes.bool,
 };
 
 export default DashboardPageContainer;

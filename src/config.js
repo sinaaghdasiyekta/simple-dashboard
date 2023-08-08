@@ -5,3 +5,4 @@ export const auth0Config = {
 };
 
 export const hostURL = process.env.REACT_APP_HOST_URL;
+export const apiBaseURL = process.env.REACT_APP_API_URL;

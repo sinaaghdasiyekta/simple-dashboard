@@ -1,9 +1,10 @@
 import { useState } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
-import { Box, Divider, Typography, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
+import { Box, Divider, Typography, MenuItem, IconButton, Popover } from '@mui/material';
 // mocks_
 import useAuth from '../../../hooks/useAuth';
+import BoringAvatar from '../../../components/BoringAvatar';
 
 // ----------------------------------------------------------------------
 
@@ -43,7 +44,7 @@ export default function AccountPopover() {
           }),
         }}
       >
-        <Avatar src={user.photoURL} />
+        <BoringAvatar name={user.displayName} variant="marble" />
       </IconButton>
 
       <Popover
