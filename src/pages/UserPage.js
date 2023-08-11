@@ -14,7 +14,6 @@ export default function UserPage() {
   const [addDrawerOpen, setAddDrawerOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [name, setName] = useState('');
-  const [telId, setTelId] = useState(null);
   const [phone, setPhone] = useState('');
 
   const columns = [
@@ -25,7 +24,6 @@ export default function UserPage() {
 
   const resetValues = () => {
     setName('');
-    setTelId(null);
     setPhone('');
   };
   
@@ -49,10 +47,10 @@ export default function UserPage() {
   );
   const { loading: creating, execute: onAddUser } = useAsync(
     api.createUser,
-    [{ fullName: name, telId, phoneNumber: phone }],
-    [name, telId, phone],
+    [{ fullName: name, phoneNumber: phone }],
+    [name, phone],
     false,
-    Boolean(name && telId && phone),
+    Boolean(name && phone),
     false,
     (succeed, response) => {
       if (succeed) {
@@ -85,10 +83,8 @@ export default function UserPage() {
         <UserForm
           name={name}
           phone={phone}
-          telId={telId}
           onNameChange={(value) => setName(value)}
           onPhoneChange={(value) => setPhone(value)}
-          onTelIdChange={(value) => setTelId(value)}
         />
       </AddDrawer>
     </DashboardPageContainer>

@@ -9,14 +9,15 @@ import { ClassForm } from '../sections/@dashboard/class';
 import useAsync from '../hooks/useAsync';
 import api from '../apis/api';
 import BoringAvatar from '../components/BoringAvatar';
+import useAuth from '../hooks/useAuth';
 
 export default function UserPage() {
+  const { user } = useAuth();
   const [initiallized, setInitiallized] = useState(false);
   const [addDrawerOpen, setAddDrawerOpen] = useState(false);
   const [code, setCode] = useState('');
   const [users, setUsers] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [createdBy, setCreatedBy] = useState('');
   const [categories, setCategories] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -37,7 +38,6 @@ export default function UserPage() {
 
   const resetValues = () => {
     setCode('');
-    setCreatedBy([]);
     setSelectedUsers([]);
     setSelectedCategories([]);
   };
@@ -64,13 +64,13 @@ export default function UserPage() {
     api.createClass,
     [{
       code,
-      createdBy,
+      createdBy: user.email,
       categoryIds: selectedCategories.map(({ _id }) => _id),
       userIds: selectedUsers.map(({ _id }) => _id),
     }],
-    [code, createdBy, selectedCategories, selectedUsers],
+    [code, selectedCategories, selectedUsers],
     false,
-    Boolean(code && createdBy && selectedCategories.length && selectedUsers.length),
+    Boolean(code && selectedCategories.length && selectedUsers.length),
     false,
     (succeed, response) => {
       if (succeed) {
@@ -132,7 +132,6 @@ export default function UserPage() {
         <ClassForm
           code={code}
           users={users}
-          creator={createdBy}
           categories={categories}
           loadingUsers={loadingUsers}
           loadingCategories={loadingCategories}
@@ -141,7 +140,6 @@ export default function UserPage() {
           onCodeChange={(value) => setCode(value)}
           onUserSelect={(value) => setSelectedUsers(value)}
           onCategorySelect={(value) => setSelectedCategories(value)}
-          onCreatorChange={(value) => setCreatedBy(value)}
         />
       </AddDrawer>
     </DashboardPageContainer>
